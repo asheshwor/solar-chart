@@ -1,13 +1,13 @@
-(defun c:solarhr ()
-;; LISP CODE PLOTTING SOLAR CHART (hour lines portion)
-  ;; 
+(defun c:solar ()
+;; LISP CODE PLOTTING SOLAR CHART
 ;; TO BE RUN IN AUTOCAD GRAPHIC MODE
-;; with acad file SolarCalculator.dwg
+;; with acad file SolarCalculator#.dwg where # is version number
 ;; DOES NOT DRAW THE BASIC CONCENTRIC CIRCLES
 
   (graphscr)
   (SETVAR "OSMODE" 0)
-  (setq someText (CAL "asin(1)"))
+  ;(setvar "ORTHOMODE" 0)
+  ;(setq someText (CAL "asin(1)"))
   ;; Convert value in radians to degrees
   (defun R2D (radVal)
     (* 180.0 (/ radVal pi))
@@ -32,7 +32,7 @@
     ;;OUTPUT IN DEGREES
   )
   ;; STARTING INPUT MODULE
- ;(setq NDY (getreal "Please Enter the New Day Number: "))
+ (setq NDY (getreal "Please Enter the New Day Number: "))
  (setq latval (D2R (getreal "Please Enter the Latitude value: ")))
   ;;(setq	RADIUSVAL
 					;(getreal "Please Enter the Radius of solar chart: "))
@@ -40,8 +40,8 @@
   ;(setq NDY 200)
   ;(setq latval (D2R 28))
   (setq RADIUSVAL 50)
-  ;(setq PT (getpoint "\nClick on a point to begin text: "))
-  ;(setq PTT PT)
+  (setq PT (getpoint "\nClick on a point to begin text: "))
+  (setq PTT PT)
   ;;(setq HT (getdist "\nGive height of text: "))
   (setq HT 2.5)
   ;(SETQ dumb (ASINE -0.133541))
@@ -55,15 +55,8 @@
   (SETQ PT2 (list 0 -50))
 (command "_pline"  PT1 PT2 "")
   (setvar "CMDECHO" 0)
-
-    ;(setq PT (list (+ (car PT) (* (* 50 HT) mloop)) (cadr PT)))
-    ;(setq PTT (list (+ (car PTT) (* (* 50 HT) mloop)) (cadr PT)))
   
-  (setq timeval 5)
-  (while (<= timeval 19)
-    
-    (setq NDY 173)
-  (while (<= NDY 356)
+  (while (< timeval 19)
     (setq inipt nexPt)
     (setq hraval (D2R (* 15 (- timeval 12))))
 					;done in radians
@@ -85,6 +78,7 @@
 		 )
     )
     		;ALTLEN IS NOW IN METER
+
     ;get the azimuth IN degrees
     ;;COMPUTING azival
     (setq azival2 (/ (- (* (cos latval) (sin decval)) (* (cos decval) (* (sin latval) (cos hraval)))) (cos (D2R altval))))
@@ -112,19 +106,49 @@
 	      nowText2 (rtos timeval 2 3)
 	      ;nowText2 (strcat nowText2 "_" (rtos azival2))
 	      )
-
+    (command "_text" "J" "C" PT HT "" nowText2)
+    (setq PT1 (list (+ (car PT) (* HT 10)) (cadr PT))
+	  PT2 (list (+ (car PT) (* HT 20)) (cadr PT))
+	  )
+    (setq ln1 (list (- (car PT) (* HT 5)) (- (cadr PT) (/ HT 2)))
+	  ln2 (list (+ (car PT2) (* HT 5)) (- (cadr PT2) (/ HT 2)))
+	  )
+    (command "_line" ln1 ln2 "")
+    (command "_text" "j" "c" PT1 HT "" nowText1)
+    (command "_text" "j" "c" PT2 HT "" nowText0)
+    	(while (= header 0)
+		;drawing header
+	  	(command "_text" "J" "C" (list (+ (car PT) (* HT 0)) (+ (* 2 HT) (cadr PT))) HT "" "Time")
+	      	(command "_text" "j" "c" (list (+ (car PT) (* HT 10)) (+ (* 2 HT) (cadr PT))) HT "" "Altitude")
+    		(command "_text" "j" "c" (list (+ (car PT) (* HT 20)) (+ (* 2 HT) (cadr PT))) HT "" "Azimuth")
+	  (setq header 1)
+	  )
     (setq counter (+ counter 1))
-    ;(setq timeval (+ 0.25 timeval))
+    (setq timeval (+ 0.25 timeval))
     (setq PT (list (car PT) (- (cadr PT) (* 2 HT))))
     ;store variables for drawing table
-		(setq NDY (+ 3 NDY))
-    )
-  
-    			(setq timeval (+ 1 timeval))
-    )
+  )
+  ;draw the table header and vertical lines
+  (setq tl1 (list (- (car PTT) (* HT 5)) (+ (cadr PTT) (* HT 1.5))))
+  (setq PTT (list (+ (car PTT) (* HT 25)) (+ (cadr PTT) (* HT 1.5))))
+  (command "_line" PTT tl1 "")
+  (setq tl1v (list (- (car ln1) (* HT 0)) (+ (cadr PTT) (* HT 2)))
+  	PTTv (list (+ (car ln2) (* HT 0)) (+ (cadr PTT) (* HT 2)))
+	)
+  (command "_line" PTTv ln2 "")
+  (command "_line" tl1v ln1 "")
+  (setq vl1 (list (- (car PTT) (* HT 10)) (+ (cadr PTT) (* HT 2)))
+	vl2 (list (- (car PTT) (* HT 10)) (+ (cadr ln2) (* HT 0)))
+	vl3 (list (- (car PTT) (* HT 20)) (+ (cadr PTT) (* HT 2)))
+	vl4 (list (- (car PTT) (* HT 20)) (+ (cadr ln2) (* HT 0)))
+	)
+  (command "_line" PTTv tl1v "")
+  (command "_line" vl1 vl2 "")
+  (command "_line" vl3 vl4 "")
+  ;(command "_line" vl1 vl3 "")
   (SETVAR "OSMODE" 14847)
   (setvar "CMDECHO" 1)
+  (setvar "ORTHOMODE" 1)
   (princ)
-  
 
 )
